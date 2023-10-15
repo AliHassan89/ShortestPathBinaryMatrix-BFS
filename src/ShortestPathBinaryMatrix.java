@@ -28,50 +28,58 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class ShortestPathBinaryMatrix {
+    
     public int shortestPathBinaryMatrix(int[][] grid) {
-        if (grid[0][0] == 1 || grid[grid.length-1][grid[0].length-1] == 1) {
+        int rows = grid.length;
+        int cols = grid[0].length;
+
+        if (grid[0][0] == 1 || grid[rows-1][cols-1] == 1)
             return -1;
-        }
 
-        Queue<Location> queue = new LinkedList<>();
-        int[][] directions = new int[][]{{-1,-1},{-1,0}, {-1,1}, {0,-1}, {0,1}, {1,0},{1,-1}, {1,1}};
-        int m = grid.length;
-        int n = grid[0].length;
-        int count = 1;
-        queue.add(new Location(0,0));
+        Queue<Cell> queue = new LinkedList<>();
+        queue.offer(new Cell(0, 0, 1));
         grid[0][0] = 1;
-        boolean reached = false;
+        int minPathLen = Integer.MAX_VALUE;
 
-        while (!queue.isEmpty()) {
-            int size = queue.size();
-            for (int i=0; i<size; i++) {
-                Location loc = queue.poll();
-                if (loc.x == m-1 && loc.y == n-1) {
-                    reached = true;
-                    return count;
-                }
-                for (int[] dir : directions) {
-                    int x = loc.x + dir[0];
-                    int y = loc.y + dir[1];
-                    if (x >=0 && x < m && y >= 0 && y < n && grid[x][y] == 0) {
-                        queue.add(new Location(x, y));
-                        grid[x][y] = 1;
-                    }
+        int[] xaxis = {-1, -1, -1, 0, 0, 1, 1, 1};
+        int[] yaxis = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+        while (!queue.isEmpty())
+        {
+            Cell currCell = queue.poll();
+            if (currCell.x == rows-1 && currCell.y == cols - 1) {
+                minPathLen = Math.min(minPathLen, currCell.lenSoFar);
+            }
+            for (int i=0; i<xaxis.length; i++)
+            {
+                int x = currCell.x + xaxis[i];
+                int y = currCell.y + yaxis[i];
+                if (canMove(grid, x, y))
+                {
+                    queue.offer(new Cell(currCell.x + xaxis[i], currCell.y + yaxis[i], currCell.lenSoFar + 1));
+                    grid[currCell.x + xaxis[i]][currCell.y + yaxis[i]] = 1;
                 }
             }
-            ++count;
         }
 
-        return reached ? count : -1;
+        return minPathLen == Integer.MAX_VALUE ? -1 : minPathLen;
     }
 
-}
+    private boolean canMove(int[][] grid, int newX, int newY)
+    {
+        if (newX >= grid.length || newY >= grid[0].length || newX < 0 || newY < 0 || grid[newX][newY] == 1)
+            return false;
 
-class Location {
-    int x;
-    int y;
-    Location(int x, int y) {
-        this.x = x;
-        this.y = y;
+        return true;
+    }
+
+    private static class Cell {
+        public int x, y, lenSoFar;
+        public Cell(int x, int y, int lenSoFar)
+        {
+            this.x = x;
+            this.y = y;
+            this.lenSoFar = lenSoFar;
+        }
     }
 }
